@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PanAstro — Astrophotography Portfolio</title>
+<title>Cosmos — Astrophotography Portfolio</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -578,7 +578,7 @@
 
 <!-- NAV -->
 <nav id="nav">
-  <a href="#hero" class="nav-logo">Pan<span>Astro</span></a>
+  <a href="#hero" class="nav-logo">Cos<span>mos</span></a>
   <ul class="nav-links">
     <li><a href="#gallery">Gallery</a></li>
     <li><a href="#about">About</a></li>
@@ -588,7 +588,7 @@
 
 <!-- HERO -->
 <section id="hero">
-  <p class="hero-eyebrow">Deep Sky · Wide Field</p>
+  <p class="hero-eyebrow">Deep Sky · Planetary · Wide Field</p>
   <h1 class="hero-title">
     Light from<br><em>the cosmos</em>
   </h1>
@@ -641,8 +641,8 @@
       <h2 class="section-title">About</h2>
     </div>
     <p class="about-quote">
-      "We are made of <span>star-stuff</span><br>."
-      -Carl Sagan
+      "The cosmos is within us.<br>
+      We are made of <span>star-stuff</span>."
     </p>
     <p class="about-body">
       Every photograph in this collection represents hours of patience beneath dark skies — 
@@ -655,9 +655,9 @@
       full-resolution lightbox view.
     </p>
     <div class="about-gear">
-      <div class="gear-item"><strong>Primary Scope</strong>Samyang 135mm F2</div>
-      <div class="gear-item"><strong>Camera</strong>Touptek ATR585C</div>
-      <div class="gear-item"><strong>Mount</strong>Sky-Watcher Star-Adventurer GTI</div>
+      <div class="gear-item"><strong>Primary Scope</strong>APO Refractor 102mm f/7</div>
+      <div class="gear-item"><strong>Camera</strong>ZWO ASI294MC Pro</div>
+      <div class="gear-item"><strong>Mount</strong>Sky-Watcher EQ6-R Pro</div>
       <div class="gear-item"><strong>Processing</strong>PixInsight · Photoshop</div>
     </div>
   </div>
@@ -671,17 +671,18 @@
     Interested in prints, collaborations, or simply want to talk about the universe? 
     I'd love to hear from you.
   </p>
-  <a href="mailto:tsakanioup@gmail.com" class="contact-email">tsakanioup@gmail.com</a>
+  <a href="mailto:hello@cosmos-astro.com" class="contact-email">hello@cosmos-astro.com</a>
   <div class="contact-social">
-    <a href="https://www.instagram.com/panastro55/" class="social-link">Instagram</a>
-    <a href="https://app.astrobin.com/u/tsakanioup" class="social-link">Astrobin</a>
-    
+    <a href="#" class="social-link">Instagram</a>
+    <a href="#" class="social-link">Astrobin</a>
+    <a href="#" class="social-link">Twitter / X</a>
+    <a href="#" class="social-link">Flickr</a>
   </div>
 </section>
 
 <!-- FOOTER -->
 <footer>
-  <span>© 2026 PanAstro Astrophotography</span>
+  <span>© 2026 Cosmos Astrophotography</span>
   <span>All images are original works — all rights reserved</span>
   <span>Shot under dark skies</span>
 </footer>
@@ -698,6 +699,7 @@
   </div>
 </div>
 
+<!-- photos managed via GitHub -->
 
 <script>
 // ── STARFIELD ──
@@ -750,20 +752,27 @@ const placeholderGradients = [
   'radial-gradient(ellipse at 35% 65%, #001a14 0%, #000e0a 50%, #000504 100%)',
 ];
 
+// ── YOUR PHOTOS — add more objects here as you push new images to GitHub ──
 const demoPhotos = [
-  { name:'Orion Nebula (M42)', meta:'105mm · ISO 1600 · 4h integration', gradient: placeholderGradients[0] },
-  { name:'Andromeda Galaxy (M31)', meta:'300mm · ISO 800 · 3h integration', gradient: placeholderGradients[1] },
-  { name:'Horsehead & Flame', meta:'135mm · ISO 3200 · 6h integration', gradient: placeholderGradients[2] },
-  { name:'Lagoon Nebula (M8)', meta:'200mm · ISO 1600 · 2.5h integration', gradient: placeholderGradients[3] },
-  { name:'Pleiades (M45)', meta:'85mm · ISO 3200 · 3h integration', gradient: placeholderGradients[4] },
-  { name:'Crab Nebula (M1)', meta:'300mm · ISO 1600 · 5h integration', gradient: placeholderGradients[5] },
-  { name:'Ring Nebula (M57)', meta:'500mm · ISO 800 · 4h integration', gradient: placeholderGradients[6] },
-  { name:'Milky Way Core', meta:'24mm · ISO 6400 · Panorama', gradient: placeholderGradients[7] },
-  { name:'Triangulum Galaxy (M33)', meta:'400mm · ISO 1600 · 4h integration', gradient: placeholderGradients[8] },
-  { name:'Rosette Nebula', meta:'200mm · ISO 3200 · 5h integration', gradient: placeholderGradients[9] },
+  {
+    name: 'Lagoon And Trifid Nebula',
+    meta: 'Deep Sky · Sagittarius',
+    url: 'https://raw.githubusercontent.com/PanosTsakaniou/Astro/main/images/Lagoon%20And%20Trifid%20nebula.png'
+  },
+  {
+    name: 'LDN1235 — The Dark Shark Nebula',
+    meta: 'Dark Nebula · Cepheus',
+    url: 'https://raw.githubusercontent.com/PanosTsakaniou/Astro/main/images/LDN1235%20The%20dark%20shark%20nebula.png'
+  },
 ];
 
-const spanClasses = ['span-1','span-2','span-3','span-4','span-5','span-6','span-7','span-8','span-9','span-10'];
+// The pattern repeats — so every 10th image restarts the layout cycle
+// Add span classes here to change how cards look; pattern loops forever
+const spanPattern = ['span-1','span-2','span-3','span-4','span-5','span-6','span-7','span-8','span-9','span-10'];
+
+// Helper: pick span class by cycling through the pattern
+const spanClasses = { length: Infinity };
+function getSpanClass(i) { return spanPattern[i % spanPattern.length]; }
 
 function renderGallery() {
   const grid = document.getElementById('photo-grid');
@@ -775,7 +784,7 @@ function renderGallery() {
 
   allPhotos.forEach((photo, i) => {
     const card = document.createElement('div');
-    const spanClass = i < spanClasses.length ? spanClasses[i] : 'span-3';
+    const spanClass = getSpanClass(i);
     card.className = `photo-card ${spanClass}`;
     card.dataset.index = i;
 

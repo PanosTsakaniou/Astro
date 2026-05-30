@@ -215,6 +215,7 @@
     grid-template-columns: repeat(12, 1fr);
     grid-auto-rows: 80px;
     gap: 8px;
+    grid-auto-flow: dense;
   }
 
   /* Each photo card */
@@ -278,8 +279,8 @@
   .photo-card:hover .card-expand { opacity: 1; transform: scale(1); }
 
   /* Grid layout assignments */
-  .photo-card.span-1  { grid-column: span 4; grid-row: span 5; }
-  .photo-card.span-2  { grid-column: span 5; grid-row: span 8; }
+  .photo-card.span-1  { grid-column: span 9; grid-row: span 8; }
+  .photo-card.span-2  { grid-column: span 3; grid-row: span 8; }
   .photo-card.span-3  { grid-column: span 6; grid-row: span 6; }
   .photo-card.span-4  { grid-column: span 6; grid-row: span 6; }
   .photo-card.span-5  { grid-column: span 4; grid-row: span 5; }
@@ -619,7 +620,7 @@
 <section id="about">
   <div class="about-visual">
     <div class="about-img-frame">
-      <div id="about-mini-grid" style="width:100%;height:100%;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:4px;padding:4px;"></div>
+      <div id="about-mini-grid" style="width:100%;height:100%;display:grid;grid-template-columns:repeat(3, 1fr);grid-auto-rows:1fr;"></div>
         </div>
     <div class="about-stat-block">
       <div class="stat-number" id="about-count">0</div>
@@ -774,7 +775,7 @@ const demoPhotos = [
   {
     name: 'Andromeda Galaxy (M31)',
     meta: 'Galaxy · Andromeda',
-    url: 'https://raw.githubusercontent.com/PanosTsakaniou/Astro/main/images/M33.jpg'
+    url: 'https://raw.githubusercontent.com/PanosTsakaniou/Astro/main/images/M31.jpg'
   }
   
 ];
@@ -841,7 +842,7 @@ function renderGallery() {
   const miniGrid = document.getElementById('about-mini-grid');
   if(miniGrid) {
     miniGrid.innerHTML = '';
-    const max = 4;
+    const max = allPhotos.length;
     for(let i = 0; i < max; i++) {
       const cell = document.createElement('div');
       cell.style.cssText = 'border-radius:2px;overflow:hidden;background:#111118;';

@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PanAstro — Astrophotography Portfolio</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --ink: #0a0a0f;
+    --paper: #f5f3ee;
+    --gold: #c9a96e;
+    --gold-dim: #8a6d40;
+    --mist: rgba(255,255,255,0.07);
+    --font-display: 'Cormorant Garamond', Georgia, serif;
+    --font-body: 'Jost', system-ui, sans-serif;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--ink);
+    color: var(--paper);
+    font-family: var(--font-body);
+    font-weight: 300;
+    overflow-x: hidden;
+  }
+
+  /* ── CURSOR ── */
+  * { cursor: none; }
+  #cursor {
+    position: fixed; top: 0; left: 0; z-index: 9999;
+    width: 8px; height: 8px;
+    background: var(--gold);
+    border-radius: 50%;
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+    transition: transform 0.1s, width 0.3s, height 0.3s, background 0.3s;
+    mix-blend-mode: screen;
+  }
+  #cursor.expand {
+    width: 48px; height: 48px;
+    background: rgba(201,169,110,0.2);
+    border: 1px solid var(--gold);
+  }
+
+  /* ── STARFIELD ── */
+  #starfield {
+    position: fixed; inset: 0; z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+  }
+  .star {
+    position: absolute;
+    background: white;
+    border-radius: 50%;
+    animation: twinkle var(--d) ease-in-out infinite alternate;
+    animation-delay: var(--delay);
+  }
+  @keyframes twinkle {
+    from { opacity: var(--min-o); transform: scale(1); }
+    to   { opacity: var(--max-o); transform: scale(1.4); }
+  }
+
+  /* ── NOISE OVERLAY ── */
+  body::before {
+    content: '';
+    position: fixed; inset: 0; z-index: 1;
+    pointer-events: none;
+    opacity: 0.03;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 128px 128px;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 2rem 4rem;
+    background: linear-gradient(to bottom, rgba(10,10,15,0.9), transparent);
+    backdrop-filter: blur(0px);
+    transition: backdrop-filter 0.4s;
+  }
+  nav.scrolled { backdrop-filter: blur(12px); }
+
+  .nav-logo {
+    font-family: var(--font-display);
+    font-weight: 300;
+    font-size: 1.5rem;
+    letter-spacing: 0.15em;
+    color: var(--paper);
+    text-decoration: none;
+  }
+  .nav-logo span { color: var(--gold); font-style: italic; }
+
+  .nav-links {
+    display: flex; gap: 2.5rem; list-style: none;
+    font-size: 0.7rem; letter-spacing: 0.2em; text-transform: uppercase;
+  }
+  .nav-links a {
+    color: rgba(245,243,238,0.6);
+    text-decoration: none;
+    transition: color 0.3s;
+    position: relative;
+  }
+  .nav-links a::after {
+    content: '';
+    position: absolute; bottom: -4px; left: 0; right: 0;
+    height: 1px; background: var(--gold);
+    transform: scaleX(0); transform-origin: right;
+    transition: transform 0.4s ease;
+  }
+  .nav-links a:hover { color: var(--paper); }
+  .nav-links a:hover::after { transform: scaleX(1); transform-origin: left; }
+
+  /* ── HERO ── */
+  #hero {
+    position: relative; z-index: 2;
+    height: 100vh;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    text-align: center;
+    padding: 2rem;
+  }
+
+  .hero-eyebrow {
+    font-size: 0.65rem; letter-spacing: 0.4em; text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 2rem;
+    opacity: 0;
+    animation: fadeUp 1.2s 0.3s forwards;
+  }
+
+  .hero-title {
+    font-family: var(--font-display);
+    font-weight: 300;
+    font-size: clamp(4rem, 10vw, 9rem);
+    line-height: 0.9;
+    letter-spacing: -0.02em;
+    opacity: 0;
+    animation: fadeUp 1.2s 0.6s forwards;
+  }
+  .hero-title em {
+    display: block;
+    font-style: italic;
+    color: transparent;
+    -webkit-text-stroke: 1px rgba(245,243,238,0.4);
+  }
+
+  .hero-sub {
+    margin-top: 2rem;
+    font-size: 0.8rem; letter-spacing: 0.15em;
+    color: rgba(245,243,238,0.5);
+    opacity: 0;
+    animation: fadeUp 1.2s 0.9s forwards;
+  }
+
+  .hero-scroll {
+    position: absolute; bottom: 3rem; left: 50%;
+    transform: translateX(-50%);
+    display: flex; flex-direction: column; align-items: center; gap: 0.75rem;
+    font-size: 0.6rem; letter-spacing: 0.25em; text-transform: uppercase;
+    color: rgba(245,243,238,0.4);
+    opacity: 0;
+    animation: fadeIn 1.2s 1.8s forwards;
+  }
+  .scroll-line {
+    width: 1px; height: 60px;
+    background: linear-gradient(to bottom, var(--gold), transparent);
+    animation: scrollPulse 2s ease-in-out infinite;
+  }
+  @keyframes scrollPulse {
+    0%,100% { transform: scaleY(1); opacity: 0.6; }
+    50% { transform: scaleY(0.6); opacity: 1; }
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; } to { opacity: 1; }
+  }
+
+  /* ── SECTION TITLES ── */
+  .section-header {
+    display: flex; align-items: baseline; gap: 2rem;
+    margin-bottom: 3rem;
+  }
+  .section-number {
+    font-size: 0.6rem; letter-spacing: 0.2em;
+    color: var(--gold); opacity: 0.7;
+  }
+  .section-title {
+    font-family: var(--font-display);
+    font-weight: 300; font-size: 2.5rem;
+    letter-spacing: 0.05em;
+  }
+  .section-line {
+    flex: 1; height: 1px;
+    background: linear-gradient(to right, rgba(201,169,110,0.3), transparent);
+  }
+
+  /* ── GALLERY ── */
+  #gallery {
+    position: relative; z-index: 2;
+    padding: 8rem 4rem;
+  }
+
+  /* Masonry-style grid */
+  .photo-grid {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    grid-auto-rows: 80px;
+    gap: 8px;
+  }
+
+  /* Each photo card */
+  .photo-card {
+    position: relative;
+    overflow: hidden;
+    border-radius: 2px;
+    background: #111118;
+    cursor: none;
+  }
+  .photo-card::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(to top, rgba(10,10,15,0.8) 0%, transparent 50%);
+    opacity: 0; transition: opacity 0.5s;
+  }
+  .photo-card:hover::after { opacity: 1; }
+
+  .photo-card img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    display: block;
+    filter: brightness(0.85) saturate(1.1);
+    transition: transform 0.8s cubic-bezier(0.25,0.46,0.45,0.94), filter 0.5s;
+  }
+  .photo-card:hover img {
+    transform: scale(1.06);
+    filter: brightness(0.95) saturate(1.2);
+  }
+
+  .card-info {
+    position: absolute; bottom: 0; left: 0; right: 0; z-index: 2;
+    padding: 1.5rem 1.25rem 1rem;
+    transform: translateY(8px);
+    transition: transform 0.4s ease, opacity 0.4s;
+    opacity: 0;
+  }
+  .photo-card:hover .card-info { opacity: 1; transform: translateY(0); }
+
+  .card-object {
+    font-family: var(--font-display);
+    font-size: 1.4rem; font-weight: 300; font-style: italic;
+    line-height: 1;
+    margin-bottom: 0.35rem;
+  }
+  .card-meta {
+    font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--gold); opacity: 0.9;
+  }
+
+  .card-expand {
+    position: absolute; top: 1rem; right: 1rem; z-index: 3;
+    width: 32px; height: 32px;
+    border: 1px solid rgba(201,169,110,0.5);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; transform: scale(0.8);
+    transition: opacity 0.4s, transform 0.4s;
+    color: var(--gold); font-size: 12px;
+  }
+  .photo-card:hover .card-expand { opacity: 1; transform: scale(1); }
+
+  /* Grid layout assignments */
+  .photo-card.span-1  { grid-column: span 4; grid-row: span 5; }
+  .photo-card.span-2  { grid-column: span 8; grid-row: span 5; }
+  .photo-card.span-3  { grid-column: span 6; grid-row: span 6; }
+  .photo-card.span-4  { grid-column: span 6; grid-row: span 6; }
+  .photo-card.span-5  { grid-column: span 4; grid-row: span 5; }
+  .photo-card.span-6  { grid-column: span 4; grid-row: span 5; }
+  .photo-card.span-7  { grid-column: span 4; grid-row: span 5; }
+  .photo-card.span-8  { grid-column: span 12; grid-row: span 7; }
+  .photo-card.span-9  { grid-column: span 5; grid-row: span 6; }
+  .photo-card.span-10 { grid-column: span 7; grid-row: span 6; }
+
+  /* Placeholder gradients for demo images */
+  .photo-card .placeholder {
+    width: 100%; height: 100%;
+    position: absolute; inset: 0;
+  }
+
+  /* ── LIGHTBOX ── */
+  #lightbox {
+    position: fixed; inset: 0; z-index: 200;
+    background: rgba(10,10,15,0.96);
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.5s;
+    backdrop-filter: blur(20px);
+  }
+  #lightbox.open { opacity: 1; pointer-events: all; }
+
+  #lightbox img {
+    max-width: 90vw; max-height: 88vh;
+    object-fit: contain;
+    border-radius: 2px;
+    transform: scale(0.95);
+    transition: transform 0.5s cubic-bezier(0.25,0.46,0.45,0.94);
+    box-shadow: 0 40px 120px rgba(0,0,0,0.8);
+  }
+  #lightbox.open img { transform: scale(1); }
+
+  .lb-close {
+    position: absolute; top: 2rem; right: 2rem;
+    background: none; border: 1px solid rgba(201,169,110,0.4);
+    color: var(--paper); width: 44px; height: 44px;
+    border-radius: 50%; font-size: 18px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: none; transition: border-color 0.3s, background 0.3s;
+  }
+  .lb-close:hover { border-color: var(--gold); background: rgba(201,169,110,0.1); }
+
+  .lb-caption {
+    position: absolute; bottom: 2rem; left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+  }
+  .lb-title {
+    font-family: var(--font-display);
+    font-size: 1.3rem; font-style: italic; font-weight: 300;
+    margin-bottom: 0.25rem;
+  }
+  .lb-details {
+    font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--gold);
+  }
+
+  .lb-nav {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    background: none; border: 1px solid rgba(201,169,110,0.3);
+    color: var(--paper); width: 44px; height: 44px;
+    border-radius: 50%; font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: none; transition: all 0.3s;
+  }
+  .lb-nav:hover { border-color: var(--gold); background: rgba(201,169,110,0.1); }
+  .lb-prev { left: 2rem; }
+  .lb-next { right: 2rem; }
+
+  /* ── ABOUT ── */
+  #about {
+    position: relative; z-index: 2;
+    padding: 6rem 4rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8rem;
+    align-items: center;
+  }
+
+  .about-visual {
+    position: relative;
+  }
+  .about-img-frame {
+    position: relative;
+    aspect-ratio: 4/5;
+    background: #111118;
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .about-img-frame::before {
+    content: '';
+    position: absolute; top: -1.5rem; left: -1.5rem; right: 1.5rem; bottom: 1.5rem;
+    border: 1px solid rgba(201,169,110,0.2);
+    border-radius: 2px;
+    z-index: 0;
+  }
+  .about-img-frame .placeholder {
+    width: 100%; height: 100%;
+    background: radial-gradient(ellipse at 30% 40%, #1a1a3e 0%, #0a0a1a 60%, #050510 100%);
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  .about-stat-block {
+    position: absolute; bottom: -2rem; right: -2rem;
+    background: rgba(10,10,15,0.9);
+    border: 1px solid rgba(201,169,110,0.25);
+    padding: 1.5rem 2rem;
+    backdrop-filter: blur(10px);
+  }
+  .stat-number {
+    font-family: var(--font-display);
+    font-size: 3.5rem; font-weight: 300; line-height: 1;
+    color: var(--gold);
+  }
+  .stat-label {
+    font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase;
+    color: rgba(245,243,238,0.5);
+    margin-top: 0.5rem;
+  }
+
+  .about-text {}
+  .about-quote {
+    font-family: var(--font-display);
+    font-size: 1.8rem; font-weight: 300; font-style: italic;
+    line-height: 1.4;
+    margin-bottom: 2.5rem;
+    color: rgba(245,243,238,0.9);
+  }
+  .about-quote span { color: var(--gold); }
+
+  .about-body {
+    font-size: 0.85rem; line-height: 1.9;
+    color: rgba(245,243,238,0.55);
+    margin-bottom: 2rem;
+  }
+
+  .about-gear {
+    border-top: 1px solid rgba(201,169,110,0.2);
+    padding-top: 1.5rem;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;
+  }
+  .gear-item {
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    color: rgba(245,243,238,0.4);
+  }
+  .gear-item strong {
+    display: block;
+    color: var(--paper);
+    font-weight: 300;
+    font-size: 0.75rem;
+    margin-bottom: 0.2rem;
+  }
+
+  /* ── CONTACT ── */
+  #contact {
+    position: relative; z-index: 2;
+    padding: 6rem 4rem;
+    text-align: center;
+  }
+  .contact-title {
+    font-family: var(--font-display);
+    font-size: clamp(2.5rem, 6vw, 5rem);
+    font-weight: 300; font-style: italic;
+    margin: 1.5rem 0 1rem;
+    line-height: 1.1;
+  }
+  .contact-sub {
+    font-size: 0.8rem; letter-spacing: 0.1em;
+    color: rgba(245,243,238,0.4);
+    max-width: 420px; margin: 0 auto 3rem;
+    line-height: 1.8;
+  }
+  .contact-email {
+    display: inline-flex; align-items: center; gap: 1rem;
+    font-family: var(--font-display);
+    font-size: 1.5rem; font-weight: 300;
+    color: var(--paper); text-decoration: none;
+    border-bottom: 1px solid rgba(201,169,110,0.3);
+    padding-bottom: 0.5rem;
+    transition: border-color 0.3s, color 0.3s;
+  }
+  .contact-email:hover { color: var(--gold); border-color: var(--gold); }
+
+  .contact-social {
+    display: flex; justify-content: center; gap: 2rem;
+    margin-top: 3rem;
+  }
+  .social-link {
+    font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase;
+    color: rgba(245,243,238,0.4);
+    text-decoration: none;
+    transition: color 0.3s;
+  }
+  .social-link:hover { color: var(--gold); }
+
+  /* ── FOOTER ── */
+  footer {
+    position: relative; z-index: 2;
+    padding: 2rem 4rem;
+    display: flex; justify-content: space-between; align-items: center;
+    border-top: 1px solid rgba(201,169,110,0.1);
+    font-size: 0.6rem; letter-spacing: 0.15em; text-transform: uppercase;
+    color: rgba(245,243,238,0.25);
+  }
+
+  /* ── UPLOAD ZONE ── */
+  #upload-zone {
+    display: none;
+    position: fixed; inset: 0; z-index: 300;
+    background: rgba(10,10,15,0.97);
+    align-items: center; justify-content: center;
+    flex-direction: column; gap: 1.5rem;
+    backdrop-filter: blur(20px);
+  }
+  #upload-zone.active { display: flex; }
+  .upload-inner {
+    border: 1px dashed rgba(201,169,110,0.4);
+    border-radius: 4px;
+    padding: 4rem 6rem;
+    text-align: center;
+    transition: border-color 0.3s;
+  }
+  .upload-inner.dragover { border-color: var(--gold); }
+  .upload-icon { font-size: 2rem; margin-bottom: 1rem; color: var(--gold); opacity: 0.7; }
+  .upload-title {
+    font-family: var(--font-display);
+    font-size: 1.5rem; font-weight: 300; font-style: italic;
+    margin-bottom: 0.5rem;
+  }
+  .upload-hint { font-size: 0.7rem; letter-spacing: 0.15em; color: rgba(245,243,238,0.4); }
+  #file-input { display: none; }
+  .btn-ghost {
+    background: none; border: 1px solid rgba(201,169,110,0.4);
+    color: var(--paper); padding: 0.75rem 2rem;
+    font-family: var(--font-body); font-size: 0.7rem; letter-spacing: 0.15em;
+    text-transform: uppercase; cursor: none;
+    transition: border-color 0.3s, background 0.3s;
+  }
+  .btn-ghost:hover { border-color: var(--gold); background: rgba(201,169,110,0.08); }
+
+  /* ── UPLOAD MANAGER BUTTON ── */
+  #manage-btn {
+    position: fixed; bottom: 2rem; right: 2rem; z-index: 150;
+    background: rgba(10,10,15,0.9);
+    border: 1px solid rgba(201,169,110,0.3);
+    color: var(--paper); padding: 0.75rem 1.25rem;
+    font-family: var(--font-body); font-size: 0.65rem;
+    letter-spacing: 0.2em; text-transform: uppercase;
+    cursor: none; transition: all 0.3s;
+    backdrop-filter: blur(10px);
+    border-radius: 2px;
+  }
+  #manage-btn:hover { border-color: var(--gold); color: var(--gold); }
+
+  /* ── PHOTO COUNTER ── */
+  .photo-count-badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    background: var(--gold); color: var(--ink);
+    width: 18px; height: 18px; border-radius: 50%;
+    font-size: 0.55rem; font-weight: 400;
+    margin-left: 6px; vertical-align: middle;
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 900px) {
+    nav { padding: 1.5rem 2rem; }
+    .nav-links { gap: 1.5rem; }
+    #gallery { padding: 5rem 1.5rem; }
+    .photo-grid { grid-template-columns: repeat(6, 1fr); }
+    .photo-card.span-1  { grid-column: span 3; grid-row: span 5; }
+    .photo-card.span-2  { grid-column: span 3; grid-row: span 5; }
+    .photo-card.span-3  { grid-column: span 6; grid-row: span 6; }
+    .photo-card.span-4  { grid-column: span 6; grid-row: span 6; }
+    .photo-card.span-5  { grid-column: span 2; grid-row: span 4; }
+    .photo-card.span-6  { grid-column: span 2; grid-row: span 4; }
+    .photo-card.span-7  { grid-column: span 2; grid-row: span 4; }
+    .photo-card.span-8  { grid-column: span 6; grid-row: span 5; }
+    .photo-card.span-9  { grid-column: span 6; grid-row: span 5; }
+    .photo-card.span-10 { grid-column: span 6; grid-row: span 5; }
+    #about { grid-template-columns: 1fr; gap: 4rem; padding: 4rem 2rem; }
+    #contact { padding: 4rem 2rem; }
+    footer { padding: 2rem; flex-direction: column; gap: 0.5rem; text-align: center; }
+    #manage-btn { bottom: 1rem; right: 1rem; }
+  }
+</style>
+</head>
+<body>
+
+<div id="cursor"></div>
+<div id="starfield"></div>
+
+<!-- NAV -->
+<nav id="nav">
+  <a href="#hero" class="nav-logo">Pan<span>Astro</span></a>
+  <ul class="nav-links">
+    <li><a href="#gallery">Gallery</a></li>
+    <li><a href="#about">About</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <p class="hero-eyebrow">Deep Sky · Wide Field</p>
+  <h1 class="hero-title">
+    Light from<br><em>the cosmos</em>
+  </h1>
+  <p class="hero-sub">Photography from the edge of the observable universe</p>
+  <div class="hero-scroll">
+    <div class="scroll-line"></div>
+    Scroll to explore
+  </div>
+</section>
+
+<!-- GALLERY -->
+<section id="gallery">
+  <div class="section-header">
+    <span class="section-number">01</span>
+    <h2 class="section-title">Gallery</h2>
+    <div class="section-line"></div>
+    <span id="photo-count-label" style="font-size:0.65rem;letter-spacing:0.1em;color:var(--gold);white-space:nowrap;">
+      <span id="photo-count">0</span> images
+    </span>
+  </div>
+
+  <div class="photo-grid" id="photo-grid">
+    <!-- Populated by JS -->
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="about-visual">
+    <div class="about-img-frame">
+      <div class="placeholder" style="background: radial-gradient(ellipse at 40% 35%, #1d1040 0%, #0e0728 40%, #050510 100%);">
+        <svg width="120" height="120" viewBox="0 0 120 120" opacity="0.3">
+          <circle cx="60" cy="60" r="50" fill="none" stroke="#c9a96e" stroke-width="0.5"/>
+          <circle cx="60" cy="60" r="35" fill="none" stroke="#c9a96e" stroke-width="0.5"/>
+          <line x1="60" y1="10" x2="60" y2="110" stroke="#c9a96e" stroke-width="0.3"/>
+          <line x1="10" y1="60" x2="110" y2="60" stroke="#c9a96e" stroke-width="0.3"/>
+          <circle cx="60" cy="60" r="3" fill="#c9a96e"/>
+        </svg>
+      </div>
+    </div>
+    <div class="about-stat-block">
+      <div class="stat-number" id="about-count">0</div>
+      <div class="stat-label">Photographs catalogued</div>
+    </div>
+  </div>
+
+  <div class="about-text">
+    <div class="section-header">
+      <span class="section-number">02</span>
+      <h2 class="section-title">About</h2>
+    </div>
+    <p class="about-quote">
+      "We are made of <span>star-stuff</span><br>."
+      -Carl Sagan
+    </p>
+    <p class="about-body">
+      Every photograph in this collection represents hours of patience beneath dark skies — 
+      stacking light frames, calibrating, and coaxing faint nebulae and distant galaxies 
+      from the noise. This portfolio is a personal archive of the night sky, captured 
+      from observing sites across the Mediterranean.
+    </p>
+    <p class="about-body">
+      All images are presented at full resolution. Click any photograph to open the 
+      full-resolution lightbox view.
+    </p>
+    <div class="about-gear">
+      <div class="gear-item"><strong>Primary Scope</strong>Samyang 135mm F2</div>
+      <div class="gear-item"><strong>Camera</strong>Touptek ATR585C</div>
+      <div class="gear-item"><strong>Mount</strong>Sky-Watcher Star-Adventurer GTI</div>
+      <div class="gear-item"><strong>Processing</strong>PixInsight · Photoshop</div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact">
+  <span class="section-number">03</span>
+  <h2 class="contact-title">Let's connect<br>across the void</h2>
+  <p class="contact-sub">
+    Interested in prints, collaborations, or simply want to talk about the universe? 
+    I'd love to hear from you.
+  </p>
+  <a href="mailto:tsakanioup@gmail.com" class="contact-email">tsakanioup@gmail.com</a>
+  <div class="contact-social">
+    <a href="https://www.instagram.com/panastro55/" class="social-link">Instagram</a>
+    <a href="https://app.astrobin.com/u/tsakanioup" class="social-link">Astrobin</a>
+    
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <span>© 2026 PanAstro Astrophotography</span>
+  <span>All images are original works — all rights reserved</span>
+  <span>Shot under dark skies</span>
+</footer>
+
+<!-- LIGHTBOX -->
+<div id="lightbox">
+  <button class="lb-nav lb-prev" onclick="lbStep(-1)">&#8592;</button>
+  <img id="lb-img" src="" alt="">
+  <button class="lb-nav lb-next" onclick="lbStep(1)">&#8594;</button>
+  <button class="lb-close" onclick="closeLightbox()">&#215;</button>
+  <div class="lb-caption">
+    <div class="lb-title" id="lb-title"></div>
+    <div class="lb-details" id="lb-details"></div>
+  </div>
+</div>
+
+
+<script>
+// ── STARFIELD ──
+(function(){
+  const sf = document.getElementById('starfield');
+  const count = 220;
+  for(let i=0;i<count;i++){
+    const s = document.createElement('div');
+    s.className = 'star';
+    const size = Math.random() * 2 + 0.5;
+    const minO = Math.random() * 0.2 + 0.05;
+    const maxO = Math.random() * 0.5 + 0.3;
+    const dur  = (Math.random() * 4 + 3).toFixed(1) + 's';
+    const delay = (Math.random() * 5).toFixed(1) + 's';
+    s.style.cssText = `width:${size}px;height:${size}px;top:${Math.random()*100}%;left:${Math.random()*100}%;--d:${dur};--delay:${delay};--min-o:${minO};--max-o:${maxO};`;
+    sf.appendChild(s);
+  }
+})();
+
+// ── CURSOR ──
+const cursor = document.getElementById('cursor');
+document.addEventListener('mousemove', e => {
+  cursor.style.left = e.clientX + 'px';
+  cursor.style.top  = e.clientY + 'px';
+});
+document.querySelectorAll('a,button,.photo-card').forEach(el => {
+  el.addEventListener('mouseenter', () => cursor.classList.add('expand'));
+  el.addEventListener('mouseleave', () => cursor.classList.remove('expand'));
+});
+
+// ── NAV SCROLL ──
+const nav = document.getElementById('nav');
+window.addEventListener('scroll', () => {
+  nav.classList.toggle('scrolled', window.scrollY > 60);
+});
+
+// ── PHOTOS DATA ──
+let photos = [];
+
+const placeholderGradients = [
+  'radial-gradient(ellipse at 30% 40%, #1a1040 0%, #0d0726 50%, #050510 100%)',
+  'radial-gradient(ellipse at 60% 30%, #0e1a30 0%, #060e1e 50%, #020608 100%)',
+  'radial-gradient(ellipse at 50% 60%, #1e0a10 0%, #120510 50%, #060206 100%)',
+  'radial-gradient(ellipse at 20% 70%, #0a180a 0%, #050e05 50%, #020402 100%)',
+  'radial-gradient(ellipse at 70% 20%, #1a1400 0%, #0e0a00 50%, #060400 100%)',
+  'radial-gradient(ellipse at 40% 50%, #001a1a 0%, #000e0e 50%, #000505 100%)',
+  'radial-gradient(ellipse at 80% 60%, #10001a 0%, #07000e 50%, #030005 100%)',
+  'radial-gradient(ellipse at 10% 30%, #001040 0%, #000720 50%, #000210 100%)',
+  'radial-gradient(ellipse at 55% 45%, #1a0a00 0%, #0e0500 50%, #060200 100%)',
+  'radial-gradient(ellipse at 35% 65%, #001a14 0%, #000e0a 50%, #000504 100%)',
+];
+
+const demoPhotos = [
+  { name:'Orion Nebula (M42)', meta:'105mm · ISO 1600 · 4h integration', gradient: placeholderGradients[0] },
+  { name:'Andromeda Galaxy (M31)', meta:'300mm · ISO 800 · 3h integration', gradient: placeholderGradients[1] },
+  { name:'Horsehead & Flame', meta:'135mm · ISO 3200 · 6h integration', gradient: placeholderGradients[2] },
+  { name:'Lagoon Nebula (M8)', meta:'200mm · ISO 1600 · 2.5h integration', gradient: placeholderGradients[3] },
+  { name:'Pleiades (M45)', meta:'85mm · ISO 3200 · 3h integration', gradient: placeholderGradients[4] },
+  { name:'Crab Nebula (M1)', meta:'300mm · ISO 1600 · 5h integration', gradient: placeholderGradients[5] },
+  { name:'Ring Nebula (M57)', meta:'500mm · ISO 800 · 4h integration', gradient: placeholderGradients[6] },
+  { name:'Milky Way Core', meta:'24mm · ISO 6400 · Panorama', gradient: placeholderGradients[7] },
+  { name:'Triangulum Galaxy (M33)', meta:'400mm · ISO 1600 · 4h integration', gradient: placeholderGradients[8] },
+  { name:'Rosette Nebula', meta:'200mm · ISO 3200 · 5h integration', gradient: placeholderGradients[9] },
+];
+
+const spanClasses = ['span-1','span-2','span-3','span-4','span-5','span-6','span-7','span-8','span-9','span-10'];
+
+function renderGallery() {
+  const grid = document.getElementById('photo-grid');
+  grid.innerHTML = '';
+
+  const allPhotos = photos.length > 0 ? photos : demoPhotos;
+  document.getElementById('photo-count').textContent = photos.length;
+  document.getElementById('about-count').textContent = photos.length || demoPhotos.length;
+
+  allPhotos.forEach((photo, i) => {
+    const card = document.createElement('div');
+    const spanClass = i < spanClasses.length ? spanClasses[i] : 'span-3';
+    card.className = `photo-card ${spanClass}`;
+    card.dataset.index = i;
+
+    if(photo.url) {
+      const img = document.createElement('img');
+      img.src = photo.url;
+      img.alt = photo.name;
+      img.loading = 'lazy';
+      card.appendChild(img);
+    } else {
+      const ph = document.createElement('div');
+      ph.className = 'placeholder';
+      ph.style.background = photo.gradient;
+      ph.style.position = 'absolute';
+      ph.style.inset = '0';
+
+      // Tiny star dots in placeholder
+      for(let s=0;s<30;s++){
+        const dot = document.createElement('div');
+        const sz = Math.random()*2+0.5;
+        dot.style.cssText = `position:absolute;width:${sz}px;height:${sz}px;border-radius:50%;background:white;opacity:${Math.random()*0.7+0.1};top:${Math.random()*100}%;left:${Math.random()*100}%`;
+        ph.appendChild(dot);
+      }
+      card.appendChild(ph);
+    }
+
+    card.innerHTML += `
+      <div class="card-expand">⤢</div>
+      <div class="card-info">
+        <div class="card-object">${photo.name}</div>
+        <div class="card-meta">${photo.meta || ''}</div>
+      </div>`;
+
+    card.addEventListener('click', () => openLightbox(i, allPhotos));
+    card.addEventListener('mouseenter', () => cursor.classList.add('expand'));
+    card.addEventListener('mouseleave', () => cursor.classList.remove('expand'));
+    grid.appendChild(card);
+  });
+}
+
+// ── LIGHTBOX ──
+let lbPhotos = [];
+let lbIndex = 0;
+
+function openLightbox(i, photoArr) {
+  lbPhotos = photoArr;
+  lbIndex = i;
+  updateLightbox();
+  document.getElementById('lightbox').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function updateLightbox() {
+  const p = lbPhotos[lbIndex];
+  const lb = document.getElementById('lightbox');
+  const img = document.getElementById('lb-img');
+  img.style.opacity = '0';
+  if(p.url) {
+    img.src = p.url;
+    img.onload = () => { img.style.transition = 'opacity 0.4s'; img.style.opacity = '1'; };
+  } else {
+    img.src = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
+    img.style.opacity = '0';
+  }
+  document.getElementById('lb-title').textContent = p.name;
+  document.getElementById('lb-details').textContent = p.meta || '';
+}
+
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function lbStep(dir) {
+  lbIndex = (lbIndex + dir + lbPhotos.length) % lbPhotos.length;
+  updateLightbox();
+}
+
+document.getElementById('lightbox').addEventListener('click', e => {
+  if(e.target === e.currentTarget) closeLightbox();
+});
+
+document.addEventListener('keydown', e => {
+  const lb = document.getElementById('lightbox');
+  if(!lb.classList.contains('open')) return;
+  if(e.key === 'Escape') closeLightbox();
+  if(e.key === 'ArrowRight') lbStep(1);
+  if(e.key === 'ArrowLeft') lbStep(-1);
+});
+
+// ── UPLOAD ──
+function openUpload() { document.getElementById('upload-zone').classList.add('active'); }
+function closeUpload() { document.getElementById('upload-zone').classList.remove('active'); }
+
+const dropArea = document.getElementById('drop-area');
+dropArea.addEventListener('dragover', e => { e.preventDefault(); dropArea.classList.add('dragover'); });
+dropArea.addEventListener('dragleave', () => dropArea.classList.remove('dragover'));
+dropArea.addEventListener('drop', e => {
+  e.preventDefault();
+  dropArea.classList.remove('dragover');
+  handleFiles(e.dataTransfer.files);
+});
+
+document.getElementById('file-input').addEventListener('change', e => {
+  handleFiles(e.target.files);
+});
+
+function handleFiles(fileList) {
+  const files = Array.from(fileList).filter(f => f.type.startsWith('image/'));
+  files.forEach(file => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      photos.push({
+        name: file.name.replace(/\.[^.]+$/, '').replace(/[_-]/g, ' '),
+        meta: `${(file.size / 1024 / 1024).toFixed(1)} MB · ${file.type.replace('image/','')}`,
+        url: e.target.result
+      });
+      renderGallery();
+    };
+    reader.readAsDataURL(file);
+  });
+  closeUpload();
+}
+
+// ── INIT ──
+renderGallery();
+</script>
+</body>
+</html>

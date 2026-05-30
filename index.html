@@ -619,16 +619,8 @@
 <section id="about">
   <div class="about-visual">
     <div class="about-img-frame">
-      <div class="placeholder" style="background: radial-gradient(ellipse at 40% 35%, #1d1040 0%, #0e0728 40%, #050510 100%);">
-        <svg width="120" height="120" viewBox="0 0 120 120" opacity="0.3">
-          <circle cx="60" cy="60" r="50" fill="none" stroke="#c9a96e" stroke-width="0.5"/>
-          <circle cx="60" cy="60" r="35" fill="none" stroke="#c9a96e" stroke-width="0.5"/>
-          <line x1="60" y1="10" x2="60" y2="110" stroke="#c9a96e" stroke-width="0.3"/>
-          <line x1="10" y1="60" x2="110" y2="60" stroke="#c9a96e" stroke-width="0.3"/>
-          <circle cx="60" cy="60" r="3" fill="#c9a96e"/>
-        </svg>
-      </div>
-    </div>
+      <div id="about-mini-grid" style="width:100%;height:100%;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:4px;padding:4px;"></div>
+        </div>
     <div class="about-stat-block">
       <div class="stat-number" id="about-count">0</div>
       <div class="stat-label">Photographs catalogued</div>
@@ -764,6 +756,11 @@ const demoPhotos = [
     meta: 'Dark Nebula · Cepheus',
     url: 'https://raw.githubusercontent.com/PanosTsakaniou/Astro/main/images/LDN1235-The-dark-shark-nebula.jpg'
   },
+  {
+    name: 'Triangulum Galaxy (M33)',
+    meta: 'Galaxy · Triangulum',
+    url: 'https://raw.githubusercontent.com/PanosTsakaniou/Astro/main/images/M33.jpg'
+  }
 ];
 
 // The pattern repeats — so every 10th image restarts the layout cycle
@@ -779,7 +776,7 @@ function renderGallery() {
   grid.innerHTML = '';
 
   const allPhotos = photos.length > 0 ? photos : demoPhotos;
-  document.getElementById('photo-count').textContent = photos.length;
+  document.getElementById('photo-count').textContent = allPhotos.length;
   document.getElementById('about-count').textContent = photos.length || demoPhotos.length;
 
   allPhotos.forEach((photo, i) => {
@@ -823,6 +820,28 @@ function renderGallery() {
     card.addEventListener('mouseleave', () => cursor.classList.remove('expand'));
     grid.appendChild(card);
   });
+
+  // ── MINI GRID IN ABOUT ──
+  const miniGrid = document.getElementById('about-mini-grid');
+  if(miniGrid) {
+    miniGrid.innerHTML = '';
+    const max = 4;
+    for(let i = 0; i < max; i++) {
+      const cell = document.createElement('div');
+      cell.style.cssText = 'border-radius:2px;overflow:hidden;background:#111118;';
+      if(allPhotos[i] && allPhotos[i].url) {
+        const img = document.createElement('img');
+        img.src = allPhotos[i].url;
+        img.style.cssText = 'width:100%;height:100%;object-fit:cover;filter:brightness(0.8);transition:filter 0.4s;';
+        img.onmouseover = () => img.style.filter = 'brightness(1)';
+        img.onmouseout  = () => img.style.filter = 'brightness(0.8)';
+        cell.appendChild(img);
+      } else {
+        cell.style.background = placeholderGradients[i] || '#111118';
+      }
+      miniGrid.appendChild(cell);
+    }
+  }
 }
 
 // ── LIGHTBOX ──

@@ -875,39 +875,6 @@ document.addEventListener('keydown', e => {
   if(e.key === 'ArrowLeft') lbStep(-1);
 });
 
-// ── UPLOAD ──
-function openUpload() { document.getElementById('upload-zone').classList.add('active'); }
-function closeUpload() { document.getElementById('upload-zone').classList.remove('active'); }
-
-const dropArea = document.getElementById('drop-area');
-dropArea.addEventListener('dragover', e => { e.preventDefault(); dropArea.classList.add('dragover'); });
-dropArea.addEventListener('dragleave', () => dropArea.classList.remove('dragover'));
-dropArea.addEventListener('drop', e => {
-  e.preventDefault();
-  dropArea.classList.remove('dragover');
-  handleFiles(e.dataTransfer.files);
-});
-
-document.getElementById('file-input').addEventListener('change', e => {
-  handleFiles(e.target.files);
-});
-
-function handleFiles(fileList) {
-  const files = Array.from(fileList).filter(f => f.type.startsWith('image/'));
-  files.forEach(file => {
-    const reader = new FileReader();
-    reader.onload = e => {
-      photos.push({
-        name: file.name.replace(/\.[^.]+$/, '').replace(/[_-]/g, ' '),
-        meta: `${(file.size / 1024 / 1024).toFixed(1)} MB · ${file.type.replace('image/','')}`,
-        url: e.target.result
-      });
-      renderGallery();
-    };
-    reader.readAsDataURL(file);
-  });
-  closeUpload();
-}
 
 // ── INIT ──
 renderGallery();
